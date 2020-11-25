@@ -2,12 +2,14 @@ package ru.geekbrains.poplib.ui.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.fragment_user.*
+import moxy.MvpAppCompatActivity
 import moxy.MvpAppCompatFragment
 import moxy.ktx.moxyPresenter
-import ru.geekbrains.poplib.R
+import ru.geekbrains.poplib.databinding.FragmentUserBinding
+import ru.geekbrains.poplib.databinding.FragmentUsersBinding
 import ru.geekbrains.poplib.mvp.model.entity.GithubUser
 import ru.geekbrains.poplib.mvp.presenter.UserPresenter
 import ru.geekbrains.poplib.mvp.view.UserView
@@ -15,6 +17,8 @@ import ru.geekbrains.poplib.ui.App
 import ru.geekbrains.poplib.ui.BackButtonListener
 
 class UserFragment : MvpAppCompatFragment(), UserView, BackButtonListener {
+
+    private var binding: FragmentUserBinding? = null
 
     companion object {
         val USER_KEY = "user_key"
@@ -30,13 +34,32 @@ class UserFragment : MvpAppCompatFragment(), UserView, BackButtonListener {
         UserPresenter(App.instance.router, user)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) =
-        View.inflate(context, R.layout.fragment_user, null)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        binding  = FragmentUserBinding.inflate(inflater, container, false);
+        return binding?.root
+    }
 
     override fun backPressed() = presenter.backClick()
 
     override fun setLogin(login: String) {
-        user_login.text = login
+        binding?.userLogin?.text = login
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        (requireActivity() as MvpAppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> presenter.backClick()
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding  = null
     }
 
 }

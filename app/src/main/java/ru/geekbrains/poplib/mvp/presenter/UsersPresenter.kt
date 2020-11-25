@@ -1,5 +1,8 @@
 package ru.geekbrains.poplib.mvp.presenter
 
+import io.reactivex.rxjava3.core.Scheduler
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import moxy.MvpPresenter
 import ru.geekbrains.poplib.mvp.model.entity.GithubUser
 import ru.geekbrains.poplib.mvp.model.repo.GithubUsersRepo
@@ -8,9 +11,9 @@ import ru.geekbrains.poplib.mvp.view.UsersView
 import ru.geekbrains.poplib.mvp.view.list.UserItemView
 import ru.geekbrains.poplib.navigation.Screens
 import ru.terrakok.cicerone.Router
-import ru.terrakok.cicerone.Screen
 
-class UsersPresenter(val router: Router, val usersRepo: GithubUsersRepo) : MvpPresenter<UsersView>() {
+class UsersPresenter(val router: Router, val usersRepo: GithubUsersRepo, val scheduler: Scheduler) :
+    MvpPresenter<UsersView>() {
 
     class UsersListPresenter : IUsersListPresenter {
         override var itemClickListener: ((UserItemView) -> Unit)? = null
@@ -26,6 +29,7 @@ class UsersPresenter(val router: Router, val usersRepo: GithubUsersRepo) : MvpPr
     }
 
     val usersListPresenter = UsersListPresenter()
+    var usersDisposable: Disposable? = null
 
     override fun onFirstViewAttach() {
         super.onFirstViewAttach()
@@ -38,14 +42,26 @@ class UsersPresenter(val router: Router, val usersRepo: GithubUsersRepo) : MvpPr
     }
 
     fun loadData() {
-        val users = usersRepo.getUsers()
         usersListPresenter.users.clear()
-        usersListPresenter.users.addAll(users)
+
+        usersRepo.getUsers()?.map {
+            usersListPresenter.users.add(it)
+        }
+            ?.subscribeOn(Schedulers.io())
+            ?.observeOn(scheduler)
+            ?.doOnSubscribe {
+                usersDisposable = it
+            }?.subscribe()
+
         viewState.updateUsersList()
     }
 
     fun backClick(): Boolean {
         router.exit()
         return true
+    }
+
+    fun dispose() {
+        usersDisposable?.dispose()
     }
 }
