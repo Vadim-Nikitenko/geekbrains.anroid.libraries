@@ -1,5 +1,7 @@
 package ru.geekbrains.poplib.mvp.model.repo
 
+import io.reactivex.rxjava3.annotations.NonNull
+import io.reactivex.rxjava3.core.Observable
 import ru.geekbrains.poplib.mvp.model.entity.GithubUser
 
 class GithubUsersRepo {
@@ -13,7 +15,7 @@ class GithubUsersRepo {
         GithubUser("login6")
     )
 
-    fun getUsers(): List<GithubUser> {
-        return repositories
+    fun getUsers(): @NonNull Observable<GithubUser>? {
+        return Observable.fromIterable(repositories);
     }
 }
