@@ -10,12 +10,13 @@ import ru.geekbrains.poplib.mvp.model.repo.repos.IGithubReposRepo
 import ru.geekbrains.poplib.mvp.presenter.list.IReposListPresenter
 import ru.geekbrains.poplib.mvp.view.UserView
 import ru.geekbrains.poplib.mvp.view.list.RepoItemView
+import ru.geekbrains.poplib.navigation.Screens
 import ru.terrakok.cicerone.Router
 
 class UserPresenter(
     private val router: Router,
     private val user: GithubUser,
-    private val usersRepo: IGithubReposRepo,
+    private val reposRepo: IGithubReposRepo,
     private val scheduler: Scheduler
 ) : MvpPresenter<UserView>() {
 
@@ -26,12 +27,16 @@ class UserPresenter(
         super.onFirstViewAttach()
         viewState.init()
         loadData()
+
+        reposListPresenter.itemClickListener = { view ->
+            router.navigateTo(Screens.RepoScreen(reposListPresenter.repos[view.pos]))
+        }
     }
 
     private fun loadData() {
         viewState.showProgressBar()
         viewState.setLogin(user.login)
-        usersRepo.getUserRepositories(user.reposUrl)
+        reposRepo.getUserRepositories(user.reposUrl)
             .observeOn(scheduler)
             .subscribe({
                 reposListPresenter.repos.clear()
