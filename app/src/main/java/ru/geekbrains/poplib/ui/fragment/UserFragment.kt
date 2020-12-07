@@ -5,16 +5,20 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import moxy.MvpAppCompatActivity
 import moxy.MvpAppCompatFragment
 import moxy.ktx.moxyPresenter
 import ru.geekbrains.poplib.databinding.FragmentUserBinding
-import ru.geekbrains.poplib.databinding.FragmentUsersBinding
+import ru.geekbrains.poplib.mvp.model.api.ApiHolder
 import ru.geekbrains.poplib.mvp.model.entity.GithubUser
+import ru.geekbrains.poplib.mvp.model.repo.repos.RetrofitGithubReposRepo
 import ru.geekbrains.poplib.mvp.presenter.UserPresenter
 import ru.geekbrains.poplib.mvp.view.UserView
 import ru.geekbrains.poplib.ui.App
 import ru.geekbrains.poplib.ui.BackButtonListener
+import ru.geekbrains.poplib.ui.adapter.ReposRvAdapter
 
 class UserFragment : MvpAppCompatFragment(), UserView, BackButtonListener {
 
@@ -31,11 +35,24 @@ class UserFragment : MvpAppCompatFragment(), UserView, BackButtonListener {
 
     val presenter by moxyPresenter {
         val user = arguments?.get(USER_KEY) as GithubUser
-        UserPresenter(App.instance.router, user)
+        UserPresenter(
+            App.instance.router, user,
+            RetrofitGithubReposRepo(
+                ApiHolder.api
+            ), AndroidSchedulers.mainThread()
+        )
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding  = FragmentUserBinding.inflate(inflater, container, false);
+    private val adapter by lazy {
+        ReposRvAdapter(presenter.reposListPresenter)
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = FragmentUserBinding.inflate(inflater, container, false);
         return binding?.root
     }
 
@@ -45,9 +62,23 @@ class UserFragment : MvpAppCompatFragment(), UserView, BackButtonListener {
         binding?.userLogin?.text = login
     }
 
+    override fun init() {
+        binding?.rvRepos?.layoutManager = LinearLayoutManager(requireContext())
+        binding?.rvRepos?.adapter = adapter
+    }
+
+    override fun updateReposList() = adapter.notifyDataSetChanged()
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         (requireActivity() as MvpAppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        setOnSwipeRefreshBehaviour()
+    }
+
+    private fun setOnSwipeRefreshBehaviour() {
+        binding?.swipeRefresh?.setOnRefreshListener {
+            presenter.swipeRefreshed()
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -57,9 +88,17 @@ class UserFragment : MvpAppCompatFragment(), UserView, BackButtonListener {
         return super.onOptionsItemSelected(item)
     }
 
+    override fun showProgressBar() {
+        binding?.swipeRefresh?.isRefreshing = true
+    }
+
+    override fun hideProgressBar() {
+        binding?.swipeRefresh?.isRefreshing = false
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        binding  = null
+        binding = null
     }
 
 }
