@@ -23,7 +23,14 @@ class RoomImageCache(val context: Context, val db: Database) : IImageCache {
     override fun getBytes(url: String) = Single.fromCallable {
         val path = db.imageDao.findImageByUrl(url).path
         val bitmap = BitmapFactory.decodeFile(path)
-        convertBitmapToByteArray(bitmap)
+        val out = ByteArrayOutputStream()
+        try {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            out.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        out.toByteArray()
     }.subscribeOn(Schedulers.io())
 
     override fun putImage(url: String, bytes: ByteArray?) = Completable.fromCallable {
@@ -40,16 +47,4 @@ class RoomImageCache(val context: Context, val db: Database) : IImageCache {
             db.imageDao.insert(image)
         }
     }.subscribeOn(Schedulers.io())
-
-    override fun convertBitmapToByteArray(bmp: Bitmap): ByteArray {
-        val out = ByteArrayOutputStream()
-        try {
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, out)
-            out.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return out.toByteArray()
-    }
-
 }

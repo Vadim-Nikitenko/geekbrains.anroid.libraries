@@ -5,18 +5,20 @@ import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions.withCrossFade
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.annotations.NonNull
-import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
 import ru.geekbrains.poplib.mvp.model.cache.IImageCache
 import ru.geekbrains.poplib.mvp.model.image.IImageLoader
 import ru.geekbrains.poplib.mvp.model.network.INetworkStatus
+import java.io.ByteArrayOutputStream
+import java.io.IOException
 
-class GlideImageLoader(private val imageCache : IImageCache, private val networkStatus: INetworkStatus): IImageLoader<ImageView> {
+class GlideImageLoader(
+    private val imageCache: IImageCache,
+    private val networkStatus: INetworkStatus
+) : IImageLoader<ImageView> {
 
     override fun loadInto(url: String, container: ImageView) {
         networkStatus.isOnlineSingle().subscribe { isOnline ->
@@ -34,6 +36,7 @@ class GlideImageLoader(private val imageCache : IImageCache, private val network
                             e?.printStackTrace()
                             return false
                         }
+
                         override fun onResourceReady(
                             resource: Bitmap,
                             model: Any?,
@@ -41,7 +44,7 @@ class GlideImageLoader(private val imageCache : IImageCache, private val network
                             dataSource: DataSource?,
                             isFirstResource: Boolean
                         ): Boolean {
-                            imageCache.putImage(url, imageCache.convertBitmapToByteArray(resource))
+                            imageCache.putImage(url, convertBitmapToByteArray(resource))
                                 .observeOn(Schedulers.io())
                                 .subscribe()
                             return false
@@ -58,6 +61,17 @@ class GlideImageLoader(private val imageCache : IImageCache, private val network
                     }
             }
         }
+    }
+
+    fun convertBitmapToByteArray(bmp: Bitmap): ByteArray {
+        val out = ByteArrayOutputStream()
+        try {
+            bmp.compress(Bitmap.CompressFormat.PNG, 100, out)
+            out.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return out.toByteArray()
     }
 
 //    override fun loadInto(url: String, container: ImageView) {
