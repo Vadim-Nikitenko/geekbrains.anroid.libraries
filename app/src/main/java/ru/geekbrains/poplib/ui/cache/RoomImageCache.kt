@@ -35,10 +35,7 @@ class RoomImageCache(val context: Context, val db: Database) : IImageCache {
 
     override fun putImage(url: String, bytes: ByteArray?) = Completable.fromCallable {
         bytes?.let {
-            val file = File(
-                ContextWrapper(context).getDir("Image", MvpAppCompatActivity.MODE_PRIVATE),
-                "${UUID.randomUUID()}.png"
-            )
+            val file = File(context.getExternalFilesDir("Image"), "${UUID.randomUUID()}.png")
             val fos = FileOutputStream(file)
             fos.write(bytes)
             fos.flush()
