@@ -21,7 +21,6 @@ import javax.inject.Inject
 
 class UsersFragment : MvpAppCompatFragment(), UsersView, BackButtonListener {
 
-    @Inject lateinit var imageLoader: IImageLoader<ImageView>
     private var binding: FragmentUsersBinding? = null
 
     companion object {
@@ -33,9 +32,9 @@ class UsersFragment : MvpAppCompatFragment(), UsersView, BackButtonListener {
     }
 
     private val adapter by lazy {
-        UsersRvAdapter(
-            presenter.usersListPresenter,
-            imageLoader)
+        UsersRvAdapter(presenter.usersListPresenter).apply {
+            App.instance.appComponent.inject(this)
+        }
     }
 
     override fun onCreateView(
@@ -43,7 +42,6 @@ class UsersFragment : MvpAppCompatFragment(), UsersView, BackButtonListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        App.instance.appComponent.inject(this)
         binding = FragmentUsersBinding.inflate(inflater, container, false)
         return binding?.root
     }

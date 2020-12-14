@@ -7,6 +7,7 @@ import ru.geekbrains.poplib.mvp.presenter.RepoPresenter
 import ru.geekbrains.poplib.mvp.presenter.UserPresenter
 import ru.geekbrains.poplib.mvp.presenter.UsersPresenter
 import ru.geekbrains.poplib.ui.activity.MainActivity
+import ru.geekbrains.poplib.ui.adapter.UsersRvAdapter
 import ru.geekbrains.poplib.ui.fragment.RepoFragment
 import ru.geekbrains.poplib.ui.fragment.UserFragment
 import ru.geekbrains.poplib.ui.fragment.UsersFragment
@@ -30,7 +31,6 @@ interface AppComponent {
     fun inject(userPresenter: UserPresenter)
     fun inject(mainPresenter: MainPresenter)
     fun inject(repoPresenter: RepoPresenter)
-    fun inject(glideImageLoader: GlideImageLoader)
-    fun inject(usersFragment: UsersFragment)
+    fun inject(usersRvAdapter: UsersRvAdapter)
     fun inject(mainActivity: MainActivity)
 }
