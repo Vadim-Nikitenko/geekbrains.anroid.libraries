@@ -28,9 +28,7 @@ class RepoFragment : MvpAppCompatFragment(), RepoView, BackButtonListener {
 
     val presenter by moxyPresenter {
         val repo = arguments?.get(RepoFragment.USER_KEY) as GithubRepository
-        RepoPresenter(
-            App.instance.router, repo
-        )
+        RepoPresenter(repo).apply { App.instance.appComponent.inject(this) }
     }
 
     override fun onCreateView(

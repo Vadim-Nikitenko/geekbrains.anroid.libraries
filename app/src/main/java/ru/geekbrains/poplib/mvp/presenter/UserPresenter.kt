@@ -12,13 +12,13 @@ import ru.geekbrains.poplib.mvp.view.UserView
 import ru.geekbrains.poplib.mvp.view.list.RepoItemView
 import ru.geekbrains.poplib.navigation.Screens
 import ru.terrakok.cicerone.Router
+import javax.inject.Inject
 
-class UserPresenter(
-    private val router: Router,
-    private val user: GithubUser,
-    private val reposRepo: IGithubReposRepo,
-    private val scheduler: Scheduler
-) : MvpPresenter<UserView>() {
+class UserPresenter(private val user: GithubUser) : MvpPresenter<UserView>() {
+
+    @Inject lateinit var reposRepo: IGithubReposRepo
+    @Inject lateinit var scheduler: Scheduler
+    @Inject lateinit var router: Router
 
     val reposListPresenter = ReposListPresenter()
     private val compositeDisposable = CompositeDisposable()
@@ -35,8 +35,8 @@ class UserPresenter(
 
     private fun loadData() {
         viewState.showProgressBar()
-        viewState.setLogin(user.login)
-        reposRepo.getUserRepositories(user.reposUrl)
+        user.login?.let { viewState.setLogin(it) }
+        reposRepo.getRepositories(user)
             .observeOn(scheduler)
             .subscribe({
                 reposListPresenter.repos.clear()
@@ -68,7 +68,7 @@ class UserPresenter(
 
         override fun bindView(view: RepoItemView) {
             val repo = repos[view.pos]
-            view.setRepositoryName(repo.name)
+            repo.name?.let { view.setRepositoryName(it) }
         }
 
         override fun getCount() = repos.size

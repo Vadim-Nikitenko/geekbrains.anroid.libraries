@@ -4,22 +4,24 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.recyclerview.widget.LinearLayoutManager
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import moxy.MvpAppCompatActivity
 import moxy.MvpAppCompatFragment
 import moxy.ktx.moxyPresenter
 import ru.geekbrains.poplib.databinding.FragmentUsersBinding
-import ru.geekbrains.poplib.mvp.model.api.ApiHolder
-import ru.geekbrains.poplib.mvp.model.repo.users.RetrofitGithubUsersRepo
+import ru.geekbrains.poplib.mvp.model.image.IImageLoader
 import ru.geekbrains.poplib.mvp.presenter.UsersPresenter
 import ru.geekbrains.poplib.mvp.view.UsersView
 import ru.geekbrains.poplib.ui.App
 import ru.geekbrains.poplib.ui.BackButtonListener
 import ru.geekbrains.poplib.ui.adapter.UsersRvAdapter
 import ru.geekbrains.poplib.ui.image.GlideImageLoader
+import javax.inject.Inject
 
 class UsersFragment : MvpAppCompatFragment(), UsersView, BackButtonListener {
+
+    @Inject lateinit var imageLoader: IImageLoader<ImageView>
     private var binding: FragmentUsersBinding? = null
 
     companion object {
@@ -27,14 +29,13 @@ class UsersFragment : MvpAppCompatFragment(), UsersView, BackButtonListener {
     }
 
     val presenter by moxyPresenter {
-        UsersPresenter(App.instance.router,
-            RetrofitGithubUsersRepo(
-                ApiHolder.api
-            ), AndroidSchedulers.mainThread())
+        UsersPresenter().apply { App.instance.appComponent.inject(this) }
     }
 
-    val adapter by lazy {
-        UsersRvAdapter(presenter.usersListPresenter, GlideImageLoader())
+    private val adapter by lazy {
+        UsersRvAdapter(
+            presenter.usersListPresenter,
+            imageLoader)
     }
 
     override fun onCreateView(
@@ -42,6 +43,7 @@ class UsersFragment : MvpAppCompatFragment(), UsersView, BackButtonListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        App.instance.appComponent.inject(this)
         binding = FragmentUsersBinding.inflate(inflater, container, false)
         return binding?.root
     }

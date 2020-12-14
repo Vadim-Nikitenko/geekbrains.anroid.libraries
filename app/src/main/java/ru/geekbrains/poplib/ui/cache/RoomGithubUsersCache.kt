@@ -7,8 +7,7 @@ import ru.geekbrains.poplib.mvp.model.entity.room.RoomGithubUser
 import ru.geekbrains.poplib.mvp.model.entity.room.db.Database
 import ru.geekbrains.poplib.mvp.model.cache.IGithubUsersCache
 
-class RoomGithubUsersCache(val db: Database) :
-    IGithubUsersCache {
+class RoomGithubUsersCache(val db: Database) : IGithubUsersCache {
 
     override fun putUsers(users: List<GithubUser>?): Completable =
         Completable.fromCallable {
