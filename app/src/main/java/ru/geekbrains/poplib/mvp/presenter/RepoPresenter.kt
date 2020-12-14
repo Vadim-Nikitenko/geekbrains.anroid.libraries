@@ -5,15 +5,15 @@ import moxy.MvpPresenter
 import ru.geekbrains.poplib.mvp.model.entity.GithubRepository
 import ru.geekbrains.poplib.mvp.view.RepoView
 import ru.terrakok.cicerone.Router
+import javax.inject.Inject
 
-class RepoPresenter(
-    private val router: Router,
-    private val repo: GithubRepository
-) : MvpPresenter<RepoView>() {
+class RepoPresenter(val repo: GithubRepository) : MvpPresenter<RepoView>() {
+
+    @Inject lateinit var router: Router
 
     override fun onFirstViewAttach() {
         super.onFirstViewAttach()
-        viewState.setRepoName(repo.name)
+        repo.name?.let { viewState.setRepoName(it) }
     }
 
     private val compositeDisposable = CompositeDisposable()

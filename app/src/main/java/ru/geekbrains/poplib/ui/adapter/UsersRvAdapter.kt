@@ -4,13 +4,17 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import ru.geekbrains.poplib.databinding.ItemUserBinding
 import ru.geekbrains.poplib.mvp.model.image.IImageLoader
 import ru.geekbrains.poplib.mvp.presenter.list.IUsersListPresenter
 import ru.geekbrains.poplib.mvp.view.list.UserItemView
+import javax.inject.Inject
 
-class UsersRvAdapter(val presenter: IUsersListPresenter, val imageLoader: IImageLoader<ImageView>) :
+class UsersRvAdapter(val presenter: IUsersListPresenter) :
     RecyclerView.Adapter<UsersRvAdapter.ViewHolder>() {
+
+    @Inject lateinit var imageLoader: IImageLoader<ImageView>
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.pos = position

@@ -6,14 +6,11 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import moxy.MvpAppCompatActivity
 import moxy.MvpAppCompatFragment
 import moxy.ktx.moxyPresenter
 import ru.geekbrains.poplib.databinding.FragmentUserBinding
-import ru.geekbrains.poplib.mvp.model.api.ApiHolder
 import ru.geekbrains.poplib.mvp.model.entity.GithubUser
-import ru.geekbrains.poplib.mvp.model.repo.repos.RetrofitGithubReposRepo
 import ru.geekbrains.poplib.mvp.presenter.UserPresenter
 import ru.geekbrains.poplib.mvp.view.UserView
 import ru.geekbrains.poplib.ui.App
@@ -35,12 +32,7 @@ class UserFragment : MvpAppCompatFragment(), UserView, BackButtonListener {
 
     val presenter by moxyPresenter {
         val user = arguments?.get(USER_KEY) as GithubUser
-        UserPresenter(
-            App.instance.router, user,
-            RetrofitGithubReposRepo(
-                ApiHolder.api
-            ), AndroidSchedulers.mainThread()
-        )
+        UserPresenter(user).apply { App.instance.appComponent.inject(this) }
     }
 
     private val adapter by lazy {

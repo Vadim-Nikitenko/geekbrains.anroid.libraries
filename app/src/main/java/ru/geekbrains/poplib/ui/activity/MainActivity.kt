@@ -10,15 +10,20 @@ import ru.geekbrains.poplib.mvp.presenter.MainPresenter
 import ru.geekbrains.poplib.mvp.view.MainView
 import ru.geekbrains.poplib.ui.App
 import ru.geekbrains.poplib.ui.BackButtonListener
+import ru.terrakok.cicerone.NavigatorHolder
 import ru.terrakok.cicerone.android.support.SupportAppNavigator
+import javax.inject.Inject
 
 class MainActivity : MvpAppCompatActivity(), MainView {
+
+    @Inject lateinit var navigatorHolder: NavigatorHolder
     private lateinit var binding: ActivityMainBinding
-    val navigatorHolder = App.instance.navigatorHolder
     val navigator = SupportAppNavigator(this, supportFragmentManager, R.id.container)
 
     val presenter by moxyPresenter {
-        MainPresenter(App.instance.router)
+        MainPresenter().apply {
+            App.instance.appComponent.inject(this)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,6 +31,7 @@ class MainActivity : MvpAppCompatActivity(), MainView {
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        App.instance.appComponent.inject(this)
     }
 
     override fun onResumeFragments() {
